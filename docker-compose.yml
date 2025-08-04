@@ -1,25 +1,34 @@
 services:
-  products-service:
-    build: ./backend/products-service
-    ports:
-      - "8080:8080"
-
   client:
     build: ./frontend
     ports:
-      - "3000:3000"
+      - "3000:80"
+    restart: always
     depends_on:
       - products-service
       - auth-service
+
+  products-service:
+    build: ./backend/products-service
+    ports:
+      - "1323:1323"
+    restart: always
+    environment:
+      - DATABASE_URL=postgresql://user:password@db:5432/mydatabase?sslmode=disable
+    depends_on:
+      db:
+        condition: service_healthy
 
   auth-service:
     build: ./backend/auth-service
     ports:
       - "8001:8000"
-    depends_on:
-      - db
+    restart: always
     environment:
-      - DATABASE_URL=postgresql://user:password@db/mydatabase
+      - DATABASE_URL=postgresql://user:password@db:5432/mydatabase
+    depends_on:
+      db:
+        condition: service_healthy 
 
   db:
     image: postgres:13
@@ -31,6 +40,12 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data/
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d mydatabase"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: always
 
 volumes:
   postgres_data:
