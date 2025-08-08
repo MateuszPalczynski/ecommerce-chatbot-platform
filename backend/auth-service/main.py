@@ -5,6 +5,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from starlette.responses import RedirectResponse
 from authlib.integrations.starlette_client import OAuth
 import os
+import traceback # Added for detailed error logging
 
 from config import SESSION_SECRET_KEY, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
 import models
@@ -39,7 +40,7 @@ def get_db():
 
 @app.get("/")
 def read_root():
-    return {"message": "Serwer dziala i polaczyl sie z baza danych."}
+    return {"message": "Server is running and connected to the database."}
 
 @app.get('/login/google')
 async def login_via_google(request: Request):
@@ -50,12 +51,13 @@ async def login_via_google(request: Request):
 async def auth_via_google(request: Request, db: Session = Depends(get_db)):
     try:
         token = await oauth.google.authorize_access_token(request)
-    except Exception as e:
-        print(f"Authlib returned an error: {e}")
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not get token from Google")
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not get token from Google. It's possible the user cancelled the authorization."
+        )
 
-
-    user_info = await oauth.google.parse_id_token(request, token)
+    user_info = await oauth.google.userinfo(token=token)
     user_email = user_info.get('email')
     user_name = user_info.get('name')
 
@@ -70,6 +72,7 @@ async def auth_via_google(request: Request, db: Session = Depends(get_db)):
 
     access_token = security.create_access_token(data={"sub": db_user.email})
     return {"access_token": access_token, "token_type": "bearer"}
+
 
 @app.post("/register", status_code=status.HTTP_201_CREATED)
 def register_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
