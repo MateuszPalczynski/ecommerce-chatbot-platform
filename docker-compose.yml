@@ -42,12 +42,12 @@ services:
       - ./backend/auth-service:/app
     command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
-  chat-service: 
-      build: ./backend/chat-service
+  chatbot-service: 
+      build: ./backend/chatbot-service
       ports:
         - "8002:8000" 
       volumes:
-        - ./backend/chat-service:/app
+        - ./backend/chatbot-service:/app
       command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
  
       extra_hosts:
