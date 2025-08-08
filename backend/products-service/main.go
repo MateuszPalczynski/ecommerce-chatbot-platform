@@ -3,14 +3,18 @@ package main
 import (
 	"fmt"
 	"io"
+	"log" // --- NEW IMPORT ---
 	"net/http"
+	"os" // --- NEW IMPORT ---
 	"time"
 
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware" // --- NEW IMPORT ---
+	"gorm.io/driver/postgres"                // --- NEW IMPORT ---
 	"gorm.io/gorm"
-	"github.com/glebarez/sqlite"
 )
 
+// --- Models remain the same ---
 type Product struct {
 	ID          uint      `gorm:"primaryKey" json:"id"`
 	Name        string    `json:"name"`
@@ -38,13 +42,26 @@ type Cart struct {
 }
 
 func main() {
-	db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
+	// --- DATABASE CONNECTION CHANGED FROM SQLITE TO POSTGRES ---
+	dbURL := os.Getenv("DATABASE_URL")
+	if dbURL == "" {
+		log.Fatal("DATABASE_URL environment variable is not set")
+	}
+	db, err := gorm.Open(postgres.Open(dbURL), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect database")
 	}
 	db.AutoMigrate(&Product{}, &Cart{}, &Category{})
 
 	e := echo.New()
+
+	// --- CORS MIDDLEWARE ADDED ---
+	// This will fix the "Network Error" on the frontend.
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"http://localhost:3000"},
+		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
+	}))
+
 	e.Use(DBMiddleware(db))
 
 	e.POST("/test", func(c echo.Context) error {
@@ -53,6 +70,7 @@ func main() {
 		return c.String(http.StatusOK, string(body))
 	})
 
+	// --- Routes remain the same ---
 	// Produkty
 	e.POST("/products", createProduct)
 	e.GET("/products/:id", getProduct)
@@ -71,6 +89,8 @@ func main() {
 
 	e.Logger.Fatal(e.Start(":1323"))
 }
+
+// --- Handlers and DBMiddleware remain the same ---
 
 func DBMiddleware(db *gorm.DB) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
@@ -142,7 +162,7 @@ func createCart(c echo.Context) error {
 func addProductToCart(c echo.Context) error {
 	db := c.Get("db").(*gorm.DB)
 	cartID := c.Param("id")
-	
+
 	var body struct{ ProductID uint `json:"product_id"` }
 	if err := c.Bind(&body); err != nil {
 		return err

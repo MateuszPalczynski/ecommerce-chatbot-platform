@@ -5,7 +5,8 @@ from starlette.middleware.sessions import SessionMiddleware
 from starlette.responses import RedirectResponse
 from authlib.integrations.starlette_client import OAuth
 import os
-import traceback # Added for detailed error logging
+import traceback
+from fastapi.middleware.cors import CORSMiddleware
 
 from config import SESSION_SECRET_KEY, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
 import models
@@ -16,6 +17,17 @@ import database
 models.Base.metadata.create_all(bind=database.engine)
 
 app = FastAPI()
+origins = [
+    "http://localhost:3000", # Allow your React app
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"], # Allow all methods
+    allow_headers=["*"], # Allow all headers
+)
 
 app.add_middleware(SessionMiddleware, secret_key=SESSION_SECRET_KEY)
 
@@ -71,7 +83,8 @@ async def auth_via_google(request: Request, db: Session = Depends(get_db)):
         db_user = new_user
 
     access_token = security.create_access_token(data={"sub": db_user.email})
-    return {"access_token": access_token, "token_type": "bearer"}
+    frontend_url = f"http://localhost:3000/auth/callback?token={access_token}"
+    return RedirectResponse(url=frontend_url)
 
 
 @app.post("/register", status_code=status.HTTP_201_CREATED)

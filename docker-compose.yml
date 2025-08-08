@@ -1,17 +1,26 @@
 services:
   client:
-    build: ./frontend
+    image: node:18-alpine
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
     ports:
-      - "3000:80"
-    restart: always
+      - "3000:3000"
+    environment:
+      - CI=true
+    command: npm start
     depends_on:
       - products-service
       - auth-service
+    stdin_open: true
+    tty: true
 
   products-service:
     build: ./backend/products-service
     ports:
       - "1323:1323"
+    volumes:
+      - ./backend/products-service:/app
     restart: always
     environment:
       - DATABASE_URL=postgresql://user:password@db:5432/mydatabase?sslmode=disable
@@ -32,6 +41,17 @@ services:
     volumes:
       - ./backend/auth-service:/app
     command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+  chat-service: 
+      build: ./backend/chat-service
+      ports:
+        - "8002:8000" 
+      volumes:
+        - ./backend/chat-service:/app
+      command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+ 
+      extra_hosts:
+        - "host.docker.internal:host-gateway"
 
   db:
     image: postgres:13
