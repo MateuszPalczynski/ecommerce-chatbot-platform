@@ -92,7 +92,7 @@ async def ollama_stream_generator(chat_message: ChatMessage):
         yield json.dumps({"response_chunk": content}) + "\n"
 
 async def off_topic_response_generator():
-    canned_response = "Przepraszam, ale mogę rozmawiać tylko na tematy związane z naszym sklepem, produktami i zamówieniami. W czym mogę Ci pomóc?"
+    canned_response = "I apologize, but I can only discuss topics related to our store, products, and orders. How may I assist you?"
     for word in canned_response.split():
         yield json.dumps({"response_chunk": word + " "}) + "\n"
         await asyncio.sleep(0.05)
