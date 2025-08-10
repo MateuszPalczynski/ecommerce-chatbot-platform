@@ -1,22 +1,19 @@
 // src/App.js
 
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom';
 import Products from './components/Products';
 import Cart from './components/Cart';
 import Payments from './components/Payments';
 import AuthCallback from './components/AuthCallback';
 import Login from './components/Login';
+import Chat from './components/Chat'; // Import the new Chat component
 import { CartProvider } from './context/CartContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
 // AuthNav component is simplified, as login links are now in the main nav
 function AuthNav() {
   const { isAuthenticated, logout } = useAuth();
-
-  const handleGoogleLogin = () => {
-    window.location.href = 'http://localhost:8001/login/google';
-  };
 
   if (isAuthenticated) {
     return (
@@ -43,6 +40,7 @@ function App() {
               <Route path="/" element={<Products />} />
               <Route path="/login" element={<Login />} />
               <Route path="/auth/callback" element={<AuthCallback />} />
+              <Route path="/chat" element={<Chat />} /> {/* Add the new route for the Chat */}
               
               {/* --- PROTECTED ROUTES --- */}
               {/* These routes are only available if the user is authenticated */}
@@ -64,6 +62,7 @@ function Navigation() {
         <nav className="nav-bar">
             <div className="nav-links">
               <Link to="/">Produkty</Link>
+              <Link to="/chat">Czat z Botem</Link> {/* Add the new link to the Chat */}
 
               {/* --- PROTECTED LINKS --- */}
               {/* These links are only shown if the user is authenticated */}
