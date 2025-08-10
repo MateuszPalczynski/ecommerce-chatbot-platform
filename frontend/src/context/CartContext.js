@@ -34,7 +34,7 @@ export function CartProvider({ children }) {
       await axios.delete(`http://localhost:1323/carts/${cartId}/products/${productId}`);
       fetchCart();
     } catch (error) {
-      console.error('Błąd usuwania produktu:', error);
+      console.error('Error removing item from cart:', error);
     }
   };
 

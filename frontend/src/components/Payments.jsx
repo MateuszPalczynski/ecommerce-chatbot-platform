@@ -15,25 +15,25 @@ function Payments() {
         card_number: cardNumber,
         amount: cart.reduce((sum, item) => sum + item.price, 0)
       });
-      setMessage('Płatność zakończona sukcesem!');
+      setMessage('Payment successful!');
       fetchCart([]);
     } catch (error) {
-      setMessage('Błąd płatności');
+      setMessage('Payment failed. Please try again.');
     }
   };
 
   return (
     <div>
-      <h2>Płatności</h2>
+      <h2>Payments</h2>
       <form onSubmit={handleSubmit}>
         <input
           type="text"
-          placeholder="Numer karty"
+          placeholder="Card number"
           value={cardNumber}
           onChange={(e) => setCardNumber(e.target.value)}
           required
         />
-        <button type="submit">Zapłać</button>
+        <button type="submit">Pay</button>
       </form>
       {message && <p>{message}</p>}
     </div>

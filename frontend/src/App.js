@@ -1,13 +1,13 @@
 // src/App.js
 
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link} from 'react-router-dom';
 import Products from './components/Products';
 import Cart from './components/Cart';
 import Payments from './components/Payments';
 import AuthCallback from './components/AuthCallback';
 import Login from './components/Login';
-import Chat from './components/Chat'; // Import the new Chat component
+import Chat from './components/Chat';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
@@ -18,7 +18,7 @@ function AuthNav() {
   if (isAuthenticated) {
     return (
       <div className="auth-buttons">
-        <button onClick={logout}>Wyloguj</button>
+        <button onClick={logout}>Logout</button>
       </div>
     );
   }
@@ -61,15 +61,15 @@ function Navigation() {
     return (
         <nav className="nav-bar">
             <div className="nav-links">
-              <Link to="/">Produkty</Link>
-              <Link to="/chat">Czat z Botem</Link> {/* Add the new link to the Chat */}
+              <Link to="/">Products</Link>
+              <Link to="/chat">Chat with bot</Link> {/* Add the new link to the Chat */}
 
               {/* --- PROTECTED LINKS --- */}
               {/* These links are only shown if the user is authenticated */}
               {isAuthenticated && (
                 <>
-                  <Link to="/cart">Koszyk</Link>
-                  <Link to="/payments">Płatności</Link>
+                  <Link to="/cart">Card</Link>
+                  <Link to="/payments">Payments</Link>
                 </>
               )}
             </div>
@@ -77,8 +77,8 @@ function Navigation() {
             {/* Render login options only if not authenticated */}
             {!isAuthenticated ? (
                 <div className="auth-buttons">
-                    <Link to="/login"><button>Zaloguj się</button></Link>
-                    <button onClick={() => window.location.href = 'http://localhost:8001/login/google'}>Zaloguj się z Google</button>
+                    <Link to="/login"><button>Login</button></Link>
+                    <button onClick={() => window.location.href = 'http://localhost:8001/login/google'}>Login with Google</button>
                 </div>
             ) : (
                 <AuthNav />

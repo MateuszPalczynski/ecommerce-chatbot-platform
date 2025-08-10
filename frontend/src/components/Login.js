@@ -18,16 +18,16 @@ function Login() {
       await loginJwt(email, password);
       navigate('/'); // Redirect to homepage on successful login
     } catch (err) {
-      setError('Nieprawidłowy email lub hasło.');
+      setError('Invalid e-mail or password.ło.');
     }
   };
 
   return (
     <div style={{ maxWidth: '400px', margin: '40px auto', padding: '20px', border: '1px solid #ccc', borderRadius: '5px' }}>
-      <h2>Logowanie</h2>
+      <h2>Login</h2>
       <form onSubmit={handleSubmit}>
         <div style={{ marginBottom: '15px' }}>
-          <label>Email</label>
+          <label>E-mail</label>
           <input
             type="email"
             value={email}
@@ -37,7 +37,7 @@ function Login() {
           />
         </div>
         <div style={{ marginBottom: '15px' }}>
-          <label>Hasło</label>
+          <label>Password</label>
           <input
             type="password"
             value={password}
@@ -48,7 +48,7 @@ function Login() {
         </div>
         {error && <p style={{ color: 'red' }}>{error}</p>}
         <button type="submit" style={{ width: '100%', padding: '10px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '5px' }}>
-          Zaloguj
+          Login
         </button>
       </form>
     </div>

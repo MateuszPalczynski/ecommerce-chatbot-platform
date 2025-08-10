@@ -16,13 +16,13 @@ function Products() {
 
   return (
     <div>
-      <h2>Produkty</h2>
+      <h2>Products</h2>
       <div className="products-list">
         {products.map(product => (
           <div key={product.id} className="product-card">
             <h3>{product.name}</h3>
-            <p>Cena: {product.price} zł</p>
-            <button onClick={() => addToCart(product.id)}>Dodaj do koszyka</button>
+            <p>Price: {product.price} usd</p>
+            <button onClick={() => addToCart(product.id)}>Add to Cart</button>
           </div>
         ))}
       </div>

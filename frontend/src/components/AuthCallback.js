@@ -25,7 +25,7 @@ function AuthCallback() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); 
 
-  return <div>Kończenie logowania...</div>;
+  return <div>Logging in...</div>;
 }
 
 export default AuthCallback;

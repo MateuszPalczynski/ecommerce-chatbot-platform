@@ -13,9 +13,9 @@ const Cart = () => {
 
   return (
     <div className="cart-container">
-      <h2>Twój Koszyk</h2>
+      <h2>Your Shopping Cart</h2>
       {cart.length === 0 ? (
-        <p className="empty-cart">Koszyk jest pusty</p>
+        <p className="empty-cart">Your Shopping Cart is empty</p>
       ) : (
         <>
           <div className="cart-items">
@@ -23,7 +23,7 @@ const Cart = () => {
               <div key={item.id} className="cart-item">
                 <div className="item-info">
                   <h3>{item.name}</h3>
-                  <p>Cena: {item.price.toFixed(2)} zł</p>
+                  <p>Price: {item.price.toFixed(2)} zł</p>
                 </div>
                 <button 
                   className="remove-button"
@@ -35,9 +35,9 @@ const Cart = () => {
             ))}
           </div>
           <div className="cart-summary">
-            <h3>Suma całkowita: {total.toFixed(2)} zł</h3>
+            <h3>Total sum: {total.toFixed(2)} usd</h3>
             <Link to="/payments" className="checkout-button">
-              Przejdź do płatności
+              Checkout
             </Link>
           </div>
         </>

@@ -20,7 +20,6 @@ export function AuthProvider({ children }) {
     setToken(newToken);
   };
 
-  // --- NOWA FUNKCJA DO LOGOWANIA PRZEZ JWT ---
   const loginJwt = async (email, password) => {
     const response = await axios.post('http://localhost:8001/login/jwt', {
       username: email, // Backend oczekuje 'username'
