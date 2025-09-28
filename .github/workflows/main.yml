@@ -1,0 +1,73 @@
+# .github/workflows/main.yml
+
+name: Build and Push Docker Images to ACR
+
+# Trigger the workflow on pushes to the 'master' branch
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest # Use a Linux environment to build
+
+    steps:
+    # Step 1: Check out the repository code
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    # Step 2: Log in to Azure
+    # This uses the secret we will create in the next step
+    - name: Log in to Azure
+      uses: azure/login@v2
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    # Step 3: Log in to Azure Container Registry (ACR)
+    # This uses secrets from your GitHub repository settings
+    - name: Log in to ACR
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ secrets.ACR_NAME }}.azurecr.io
+        username: ${{ secrets.ACR_USERNAME }}
+        password: ${{ secrets.ACR_PASSWORD }}
+
+    # Step 4: Build and push each service's Docker image
+    - name: Build and push Auth Service
+      uses: docker/build-push-action@v5
+      with:
+        context: ./backend/auth-service
+        push: true
+        tags: ${{ secrets.ACR_NAME }}.azurecr.io/auth-service:latest
+
+    - name: Build and push Products Service
+      uses: docker/build-push-action@v5
+      with:
+        context: ./backend/products-service
+        push: true
+        tags: ${{ secrets.ACR_NAME }}.azurecr.io/products-service:latest
+
+    - name: Build and push Chatbot Service
+      uses: docker/build-push-action@v5
+      with:
+        context: ./backend/chatbot-service
+        push: true
+        tags: ${{ secrets.ACR_NAME }}.azurecr.io/chatbot-service:latest
+
+    - name: Build and push Frontend Client
+      uses: docker/build-push-action@v5
+      with:
+        context: ./frontend
+        file: ./frontend/Dockerfile # Explicitly point to the Dockerfile
+        push: true
+        tags: ${{ secrets.ACR_NAME }}.azurecr.io/frontend-client:latest
+
+    # Step 5: Log out from Azure and ACR
+    - name: Log out from ACR
+      if: always()
+      run: docker logout ${{ secrets.ACR_NAME }}.azurecr.io
+
+    - name: Log out from Azure
+      if: always()
+      run: az logout
