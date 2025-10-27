@@ -31,20 +31,20 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v1
 
       - name: Build, Tag, and Push auth-service
-        working-directory: ./auth-service
+        working-directory: ./backend/auth-service
         run: |
           docker build -t $ECR_REGISTRY/auth-service:latest .
           docker push $ECR_REGISTRY/auth-service:latest
 
       - name: Build, Tag, and Push products-service
-        working-directory: ./products-service 
+        working-directory: ./backend/products-service
         run: |
           docker build -t $ECR_REGISTRY/products-service:latest .
           docker push $ECR_REGISTRY/products-service:latest
           
 
       - name: Build, Tag, and Push frontend-client
-        working-directory: ./frontend-client
+        working-directory: ./frontend
         run: |
           docker build -t $ECR_REGISTRY/frontend-client:latest .
           docker push $ECR_REGISTRY/frontend-client:latest
