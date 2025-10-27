@@ -17,8 +17,11 @@ import database
 models.Base.metadata.create_all(bind=database.engine)
 
 app = FastAPI()
+
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
+
 origins = [
-    "http://localhost:3000", # Allow your React app
+    FRONTEND_URL,
 ]
 
 app.add_middleware(
@@ -83,7 +86,7 @@ async def auth_via_google(request: Request, db: Session = Depends(get_db)):
         db_user = new_user
 
     access_token = security.create_access_token(data={"sub": db_user.email})
-    frontend_url = f"http://localhost:3000/auth/callback?token={access_token}"
+    frontend_url = f"{FRONTEND_URL}/auth/callback?token={access_token}"
     return RedirectResponse(url=frontend_url)
 
 

@@ -1,35 +1,34 @@
-services:
-  client:
-    image: node:18-alpine
-    working_dir: /app
-    volumes:
-      - ./frontend:/app
-    ports:
-      - "3000:3000"
-    environment:
-      - CI=true
-    command: npm start
-    depends_on:
-      - products-service
-      - auth-service
-    stdin_open: true
-    tty: true
+version: '3.8'
 
-  products-service:
-    build: ./backend/products-service
+volumes:
+  postgres_data: {} 
+
+services:
+  frontend-client:
+    image: ${ECR_REGISTRY}/frontend-client:latest
     ports:
-      - "1323:1323"
-    volumes:
-      - ./backend/products-service:/app
+      - "80:80" 
     restart: always
     environment:
-      - DATABASE_URL=postgresql://user:password@db:5432/mydatabase?sslmode=disable
+      - API_AUTH_URL=http://${EC2_HOST_IP}:8001
+      - API_PRODUCTS_URL=http://${EC2_HOST_IP}:1323
+    depends_on:
+      - auth-service
+      - products-service
+
+  products-service:
+    image: ${ECR_REGISTRY}/products-service:latest
+    ports:
+      - "1323:1323"
+    restart: always
+    environment:
+      - DATABASE_URL=postgresql://user:password@db:5432/mydatabase
     depends_on:
       db:
         condition: service_healthy
 
   auth-service:
-    build: ./backend/auth-service
+    image: ${ECR_REGISTRY}/auth-service:latest
     ports:
       - "8001:8000"
     restart: always
@@ -38,32 +37,6 @@ services:
     depends_on:
       db:
         condition: service_healthy 
-    volumes:
-      - ./backend/auth-service:/app
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
-
-  chatbot-service: 
-      build: ./backend/chatbot-service
-      ports:
-        - "8002:8000" 
-      volumes:
-        - ./backend/chatbot-service:/app
-      command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
- 
-      extra_hosts:
-        - "host.docker.internal:host-gateway"
-      environment:
-        - OLLAMA_HOST=${OLLAMA_HOST}
-      depends_on:
-        - ollama
-
-  ollama:
-    image: ollama/ollama
-    volumes:
-      - ollama_data:/root/.ollama
-    ports:
-      - "11434:11434"
-    restart: always
 
   db:
     image: postgres:13
@@ -71,8 +44,6 @@ services:
       - POSTGRES_USER=user
       - POSTGRES_PASSWORD=password
       - POSTGRES_DB=mydatabase
-    ports:
-      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     healthcheck:
@@ -81,7 +52,3 @@ services:
       timeout: 5s
       retries: 5
     restart: always
-
-volumes:
-  postgres_data:
-  ollama_data: {}
