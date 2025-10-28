@@ -23,8 +23,6 @@ The stack includes a Go (Echo) backend, a React frontend, a Python AI service, a
 3. [🛠️ Technology Stack](#technology-stack)  
 4. [🔑 Key System Design: Secure Auth Flow](#key-system-design-secure-auth-flow)  
 5. [🚀 CI/CD Pipeline](#cicd-pipeline)  
-6. [⚙️ Setup and Installation (TODO)](#setup-and-installation-todo)  
-7. [📄 License](#license)
 
 ---
 
