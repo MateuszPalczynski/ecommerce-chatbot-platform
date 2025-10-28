@@ -1,4 +1,5 @@
 [Project Name]: Full-Stack E-commerce Microservices Platform 🛍️
+🚀 Live Application: [https://your-app-url.aws.com]([YOUR LIVE APPLICATION URL HERE])
 This repository contains the source code for a comprehensive, full-stack e-commerce application. The platform is built using a modern microservices architecture, featuring separate services for product management, user authentication, and an AI-powered chatbot.
 
 The stack includes a Go (Echo) backend, a React frontend, a Python AI service, and a complete CI/CD pipeline deploying to AWS using Docker and GitHub Actions.
