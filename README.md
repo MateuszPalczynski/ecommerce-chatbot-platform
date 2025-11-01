@@ -1,6 +1,6 @@
 # Full-Stack E-commerce Microservices Platform 🛍️
 
-**Live Application:** 100.27.221.122 ([100.27.221.122])
+**Live Application:** 100.27.221.122 (Note: This is a volatile IP for a running AWS EC2 instance and may change upon restart.)
 
 This repository contains the source code for a comprehensive, full-stack e-commerce application. The platform is built using a modern microservices architecture, featuring separate services for product management, user authentication, and an AI-powered chatbot.
 
@@ -28,7 +28,7 @@ The stack includes a Go (Echo) backend, a React frontend, a Python AI service, a
 
 # 🏛️ High-Level Architecture
 
-The application is decomposed into distinct microservices to ensure scalability, separation of concerns, and independent deployment.
+The production architecture deployed to AWS consists of three core services and a database. The complete project stack, including the chatbot-service, is available for local development.
 
 - **frontend-client (React):**
   - The main user-facing application. It provides the UI for browsing products, managing the cart, handling payments, and interacting with all backend services.
@@ -47,10 +47,13 @@ The application is decomposed into distinct microservices to ensure scalability,
     - JWT generation and token management.
 
 - **chatbot-service (Python):**
-  - An independent service that provides AI assistance to users.
-  - Includes its own frontend interface (or is integrated into the main React app).
-  - A Python backend service queries an LLM (e.g., ChatGPT).
-  - Filters LLM requests to stay on-topic (store inventory, clothing, etc.).
+  - An independent service that provides AI assistance to users
+  - Features a Python backend that queries an LLM (tested with Ollama)
+  - Filters LLM requests to stay on-topic (store inventory, clothing, etc.)
+  - Deployment Note: This service is part of the local development stack but is intentionally excluded from the production (AWS) deployment due to the high memory/CPU requirements of LLMs,      which exceed the t3.micro free tier.
+
+- **db (PostgreSQL):**
+  - A containerized PostgreSQL database that serves as the persistent data store for both the products-service and auth-service, ensuring data is shared and durable via a Docker volume.
 
 ---
 
@@ -61,7 +64,7 @@ The application is decomposed into distinct microservices to ensure scalability,
 - RESTful API: A clean API built with the Echo framework.  
 - Full CRUD Functionality: The products-service provides complete Create, Read, Update, and Delete operations for products.  
 - Data Modeling: Uses GORM to map Go structs to database tables for Products, Categories, and Carts.  
-- Relational Data: Manages the relationship between Products and Categories (e.g., one-to-many or many-to-many).  
+- Relational Data: Manages the relationship between Products and Categories.  
 - Cart Management: Dedicated models and API endpoints for adding/removing items from a user's cart.
 
 ## Frontend (React)
@@ -86,11 +89,11 @@ The application is decomposed into distinct microservices to ensure scalability,
 
 - Separate Service: A complete Python application for handling user chat.  
 - Frontend Interface: A dedicated UI for users to interact with the bot.  
-- LLM Integration: The Python backend service connects to ChatGPT to generate responses.  
+- LLM Integration: The Python backend service connects to an LLM (tested with local Ollama) to generate responses.
 - Domain Filtering: Intelligently filters user queries to ensure the LLM only responds to questions related to the e-commerce store, its products (clothing), and general store information.  
 - Natural Conversation: Includes a predefined list of 5 different conversation openers and closers to feel more natural.
 
-> Note: A local Ollama model was tested during development, but the production service is designed to target the ChatGPT API.
+> Note: This service is not deployed to production (AWS) as the resource requirements for running LLMs are unsuitable for the EC2 free tier. It is fully functional within the local development environment.
 
 ---
 
@@ -101,7 +104,7 @@ The application is decomposed into distinct microservices to ensure scalability,
 - **ORM / DB:** GORM, relational database (PostgreSQL)  
 - **Authorization:** OAuth2 (Google), JWT  
 - **AI:** Local Ollama models for testing
-- **Containerization / Deployment:** Docker, AWS (ECR, ECS/EC2)  
+- **Containerization / Deployment:** Docker, AWS (EC2, ECR, IAM)  
 - **CI/CD:** GitHub Actions
 
 ---
@@ -115,7 +118,7 @@ A critical requirement of this project is the secure, server-side handling of OA
 **Correct Authentication Flow:**
 
 1. **React Client:** User clicks "Login with Google."  
-2. **Request:** React client sends a request to the auth-service (e.g., `/api/auth/google/login`).  
+2. **Request:** React client (via window.location.href) redirects the user's browser to the auth-service (e.g., `http://<IP>:8001/login/google`).  
 3. **auth-service (Server):** Generates a state token and redirects the user's browser to the Google OAuth consent screen.  
 4. **Google:** User authenticates and grants permission.  
 5. **Redirect:** Google redirects the user back to the auth-service callback URI (e.g., `/api/auth/google/callback`) with an authorization code.  
@@ -124,7 +127,7 @@ A critical requirement of this project is the secure, server-side handling of OA
    - Exchanges the authorization code with Google for an access token and user profile.
    - Saves/updates the user info and provider token in its own database.
    - Generates a new, internal JWT (or session) for the user.  
-7. **React Client:** The server sends this internal JWT back to the React client, which stores it (e.g., in localStorage or a cookie) to authenticate future API requests.
+7. **React Client:** The server sends this internal JWT back to the React client, which stores it (e.g., in localStorage) to authenticate future API requests.
 
 **Security Notes:**
 
@@ -137,24 +140,20 @@ A critical requirement of this project is the secure, server-side handling of OA
 
 The project is configured for Continuous Integration and Continuous Deployment using GitHub Actions and AWS.
 
-- **Trigger:** A push or merge to the `main` branch initiates the GitHub Actions workflow.
+- **Trigger:** A push or merge to the `master` branch initiates the GitHub Actions workflow defined in .github/workflows/deploy.yml.
 
-**Build:**
-- The workflow builds the Go applications (compiling binaries).  
-- It builds the React application (static assets).  
-- It prepares the Python service.
+**Job 1: build-and-push**
+- Login: Authenticates with the AWS ECR service.
+- Build: Builds Docker images for the three production services: frontend-client, products-service, and auth-service. (The chatbot-service is intentionally skipped).
+- Push: Tags the newly built images with latest and pushes them to AWS ECR.
 
-**Dockerize:**
-- A separate Docker image is built for each service (frontend, products-service, auth-service, chatbot-service).
-
-**Push:**
-- The newly built Docker images are tagged and pushed to a container registry (e.g., AWS ECR).
-
-**Notify:**
-- Upon a successful build, a notification is sent via email.
-
-**Deploy:**
-- The workflow triggers a deployment on AWS.
-  - This instructs the AWS instances (e.g., ECS tasks, EC2 instances) to pull the new Docker images from ECR and restart the containers, completing the deployment.
-
+**Job 2: deploy**
+- Trigger: Starts only after the build-and-push job succeeds.
+- Connect: Uses SSH to securely connect to the AWS EC2 instance.
+- Copy Files: Copies the latest production docker-compose.yml (the one without the chatbot) from the repository to the EC2 host.
+- Execute Deployment: Runs a script on the EC2 host that:
+   - Logs the Docker daemon into ECR (using the EC2's IAM Role).   
+   - Pulls the new latest images from ECR (docker-compose pull).
+   - Restarts all services with the new images (docker-compose up -d --force-recreate).
+     
 ---
