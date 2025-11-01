@@ -1,6 +1,6 @@
 # Full-Stack E-commerce Microservices Platform 🛍️
 
-**Live Application:** https://your-app-url.aws.com ([YOUR LIVE APPLICATION URL HERE])
+**Live Application:** 100.27.221.122 ([100.27.221.122])
 
 This repository contains the source code for a comprehensive, full-stack e-commerce application. The platform is built using a modern microservices architecture, featuring separate services for product management, user authentication, and an AI-powered chatbot.
 
