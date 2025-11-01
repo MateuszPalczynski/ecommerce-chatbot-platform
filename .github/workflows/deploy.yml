@@ -46,7 +46,11 @@ jobs:
       - name: Build, Tag, and Push frontend-client
         working-directory: ./frontend
         run: |
-          docker build -t $ECR_REGISTRY/frontend-client:latest .
+          docker build \
+            --no-cache \
+            --build-arg REACT_APP_API_AUTH_URL=http://${{ secrets.EC2_HOST_IP }}:8001 \
+            --build-arg REACT_APP_API_PRODUCTS_URL=http://${{ secrets.EC2_HOST_IP }}:1323 \
+            -t $ECR_REGISTRY/frontend-client:latest .
           docker push $ECR_REGISTRY/frontend-client:latest
 
   deploy:

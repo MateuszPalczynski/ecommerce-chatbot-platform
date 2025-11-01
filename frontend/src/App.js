@@ -57,8 +57,8 @@ function App() {
 // A new component for the navigation bar to access the auth context
 function Navigation() {
     const { isAuthenticated } = useAuth();
-    const authApiUrl = process.env.API_AUTH_URL || 'http://localhost:8001';
-    const googleLoginUrl = `${authApiUrl}/login/google`;
+    const authApiUrl = process.env.REACT_APP_API_AUTH_URL || 'http://localhost:8001';
+    const googleLoginUrl = `${authApiUrl}/login/google`;
 
     return (
         <nav className="nav-bar">
