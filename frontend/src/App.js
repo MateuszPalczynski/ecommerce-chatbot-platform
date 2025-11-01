@@ -57,6 +57,8 @@ function App() {
 // A new component for the navigation bar to access the auth context
 function Navigation() {
     const { isAuthenticated } = useAuth();
+    const authApiUrl = process.env.API_AUTH_URL || 'http://localhost:8001';
+    const googleLoginUrl = `${authApiUrl}/login/google`;
 
     return (
         <nav className="nav-bar">
@@ -78,7 +80,7 @@ function Navigation() {
             {!isAuthenticated ? (
                 <div className="auth-buttons">
                     <Link to="/login"><button>Login</button></Link>
-                    <button onClick={() => window.location.href = 'http://localhost:8001/login/google'}>Login with Google</button>
+                    <button onClick={() => window.location.href = googleLoginUrl}>Login with Google</button>
                 </div>
             ) : (
                 <AuthNav />
